@@ -43,6 +43,28 @@ def make_source(root: Path, profile: str = DEFAULT_PROFILE, *, with_blob: bool =
     return leveldb
 
 
+def pytest_terminal_summary(terminalreporter) -> None:
+    """No GitHub Actions, transforma cada teste que falhou em uma "anotação".
+
+    As anotações aparecem na página da execução sem precisar abrir o log. O
+    conteúdo é só de testes, que usam dados sintéticos.
+    """
+    import os
+
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+
+    def escape(text: str, *, prop: bool = False) -> str:
+        text = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        return text.replace(":", "%3A").replace(",", "%2C") if prop else text
+
+    for kind in ("failed", "error"):
+        for report in terminalreporter.stats.get(kind, []):
+            detail = getattr(report, "longreprtext", "") or str(getattr(report, "longrepr", ""))
+            terminalreporter.write_line(
+                f"::error title={escape(report.nodeid, prop=True)}::{escape(detail[-1800:])}")
+
+
 @pytest.fixture(autouse=True)
 def notifications(monkeypatch) -> list[tuple[str, str]]:
     """Nenhum teste mostra notificação de verdade: só anotamos o que seria mostrado."""

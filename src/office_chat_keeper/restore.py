@@ -330,6 +330,19 @@ class RestoreResult:
     report: Path | None = None
 
 
+def unique_dir(path: Path) -> Path:
+    """Devolve ``path`` ou, se já existir, ``path-2``, ``path-3``...
+
+    Os nomes de pasta levam data e hora até o segundo. Em uma máquina rápida,
+    duas operações podem cair no mesmo segundo; sem isto, a segunda falharia.
+    """
+    candidate, counter = path, 2
+    while candidate.exists():
+        candidate = path.with_name(f"{path.name}-{counter}")
+        counter += 1
+    return candidate
+
+
 def _copy_tree_with_manifest(source: Source, dest: Path, now: datetime) -> dict:
     """Cópia de segurança do estado atual (mesmo formato de um snapshot)."""
     dest.mkdir(parents=True, exist_ok=False)
@@ -381,7 +394,8 @@ def execute_restore(cfg: Config, plan: RestorePlan, *, now: datetime | None = No
     retired = {k: v.with_name(f"{v.name}.ock-antigo-{stamp}") for k, v in live.items()}
 
     # a) cópia de segurança do estado atual, fora da pasta do Office
-    backup_dir = cfg.data_dir / "pre-restore" / f"{target.source_id}-{stamp}"
+    # (unique_dir: duas restaurações no mesmo segundo não podem disputar a mesma pasta)
+    backup_dir = unique_dir(cfg.data_dir / "pre-restore" / f"{target.source_id}-{stamp}")
     backup_manifest = _copy_tree_with_manifest(target, backup_dir, now)
     if manifest_problems(backup_dir, backup_manifest) \
             or fingerprint(scan_source(target)) != plan.target_fingerprint:

@@ -267,6 +267,40 @@ def test_se_a_troca_falha_no_meio_tudo_volta(env, capsys, monkeypatch):
     assert chat_ids(env.folder) == {CHAT_B}
 
 
+def test_duas_restauracoes_no_mesmo_segundo_nao_colidem(env, monkeypatch):
+    # Em uma máquina rápida, restaurar e desfazer podem cair no mesmo segundo:
+    # cada troca precisa da sua própria pasta de cópia de segurança.
+    from datetime import datetime, timezone
+
+    from office_chat_keeper.config import load_config
+    from office_chat_keeper.discovery import discover_sources
+
+    cfg = load_config(env.data, env.root)
+    now = datetime(2026, 11, 13, 10, 0, 0, tzinfo=timezone.utc)
+
+    def restore_once(spec: str) -> Path:
+        (target,) = discover_sources(env.root)
+        with Archive(cfg.archive_path) as archive:
+            plan = restore.build_plan(cfg, archive, restore.resolve_restore_source(cfg, spec), target)
+        assert plan.blockers == []
+        return restore.execute_restore(cfg, plan, now=now).backup_dir
+
+    first = restore_once(env.spec(0))
+    assert env.cli("run") == 0
+    second = restore_once(str(first))
+    assert second.name == first.name + "-2"
+    assert chat_ids(env.folder) == {CHAT_B}
+
+
+def test_unique_dir(tmp_path):
+    base = tmp_path / "pasta"
+    assert restore.unique_dir(base) == base
+    base.mkdir()
+    assert restore.unique_dir(base) == tmp_path / "pasta-2"
+    (tmp_path / "pasta-2").mkdir()
+    assert restore.unique_dir(base) == tmp_path / "pasta-3"
+
+
 # ----------------------------------------------------------- outra pasta
 def test_restaurar_em_outra_pasta_exige_indicar_o_destino(env, capsys):
     # O Office passou a usar 2\1: a pasta original do snapshot não existe mais.

@@ -48,6 +48,7 @@ from .config import Config
 from .conversation import BLOBS_STORE, CHAT_DATABASE, CHATS_STORE
 from .discovery import BLOB_DIR_NAME, LEVELDB_DIR_NAME, Source
 from .reader import UNDEFINED, SnapshotReader, TypedArray
+from .restore import unique_dir
 from .snapshot import MANIFEST_NAME, list_snapshots
 
 log = logging.getLogger(__name__)
@@ -335,7 +336,7 @@ def create_bundle(cfg: Config, archive: Archive, target: Source, *,
         reasons = "; ".join(f"{c.id[:8]}: {reason}" for c, reason in skipped)
         raise RestoreScriptError(f"Nenhuma conversa pôde entrar no pacote ({reasons}).")
 
-    folder = cfg.data_dir / "restore" / now.strftime("%Y%m%d-%H%M%S")
+    folder = unique_dir(cfg.data_dir / "restore" / now.strftime("%Y%m%d-%H%M%S"))
     folder.mkdir(parents=True, exist_ok=False)
     # ensure_ascii=True: tudo que não é ASCII vira \\uXXXX. O arquivo fica maior,
     # mas qualquer texto do JavaScript sobrevive intacto.

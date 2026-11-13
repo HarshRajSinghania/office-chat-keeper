@@ -180,6 +180,25 @@ def test_conversation_inclui_uma_conversa_presente_para_ensaio(env, capsys):
     assert "Nenhuma conversa com esse id" in capsys.readouterr().out
 
 
+def test_dois_pacotes_no_mesmo_segundo_nao_colidem(env):
+    # Em uma máquina rápida, dois comandos seguidos caem no mesmo segundo.
+    from office_chat_keeper.archive import Archive
+    from office_chat_keeper.config import load_config
+    from office_chat_keeper.discovery import discover_sources
+    from office_chat_keeper.restore_script import create_bundle
+
+    data, root, _run, _rewrite = env
+    cfg = load_config(data, root)
+    (target,) = discover_sources(root)
+    now = datetime(2026, 11, 13, 10, 0, 0, tzinfo=timezone.utc)
+    with Archive(cfg.archive_path) as archive:
+        first = create_bundle(cfg, archive, target, only=["1111"], now=now)
+        second = create_bundle(cfg, archive, target, only=["1111"], now=now)
+    assert first.folder != second.folder and second.folder.name == first.folder.name + "-2"
+    assert (first.folder / "dados-restauracao.json").is_file()
+    assert (second.folder / "dados-restauracao.json").is_file()
+
+
 def test_sem_copia_bruta_a_conversa_fica_de_fora(env, capsys):
     data, _root, run, rewrite = env
     rewrite([sample_chat(CHAT_B, title="Outra conversa")])
