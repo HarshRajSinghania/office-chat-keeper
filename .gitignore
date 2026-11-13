@@ -1,0 +1,38 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Configuração local de ferramentas de desenvolvimento e pontos de restauração
+# do editor (têm caminhos com o nome do usuário)
+.claude/
+.restauracao/
+
+# --- Dados reais: NUNCA devem entrar no repositório ---
+# Armazenamento bruto do IndexedDB (contém conversas e tokens de conectores)
+*.leveldb/
+*.blob/
+*.ldb
+MANIFEST-*
+# Pastas de dados da ferramenta e a cópia real usada como fixture local
+ClaudeOfficeBackup*/
+backup-claude-excel/
+fixture-real/
+snapshots/
+exports/
+# Arquivo permanente e índices
+*.sqlite
+*.sqlite3
+*.db
+# Logs (mesmo sem texto de conversa, têm caminhos com nome de usuário)
+*.log
+logs/
+# Segredos
+.env
+*.token

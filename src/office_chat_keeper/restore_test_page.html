@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ensaio de restauração</title>
+<style>
+  body { font: 15px/1.5 Segoe UI, Arial, sans-serif; margin: 0; padding: 24px 16px; background: #fafafa; color: #1a1a1a; }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  .box { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 14px 16px; margin: 14px 0; }
+  button { font: inherit; padding: 6px 14px; margin: 4px 8px 4px 0; }
+  pre { background: #f0f0f0; padding: 10px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }
+  code { background: #eee; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ensaio de restauração (banco descartável)</h1>
+  <p>Esta página cria, <strong>só neste navegador e nesta página</strong>, um banco
+  <code>claude-chat-history</code> vazio com o mesmo esquema do suplemento. Serve para
+  ensaiar o script de restauração sem tocar no suplemento de verdade. Ela não acessa a rede.</p>
+
+  <div class="box">
+    <strong>1. Criar o banco de ensaio</strong>
+    <p>Clique em <strong>Escolher arquivo</strong> e selecione o
+    <code>dados-restauracao.json</code> (a página lê só o esquema dele):</p>
+    <input type="file" id="schema-file" accept=".json,application/json">
+    <p><label><input type="checkbox" id="seed"> Já colocar no banco a primeira conversa do arquivo,
+    com outra identidade (para ver o ajuste de <code>userId</code>/<code>orgId</code> e o "já existe")</label></p>
+    <button id="create">Criar banco vazio</button>
+    <button id="reset">Apagar banco de ensaio</button>
+  </div>
+
+  <div class="box">
+    <strong>2. Rodar o script</strong>
+    <ol>
+      <li>Abra o arquivo <code>script-para-colar-no-console.txt</code> (duplo clique: ele abre no Bloco de Notas).
+      Pressione Ctrl+A e depois Ctrl+C.</li>
+      <li>Volte a esta página, pressione F12 e abra a aba <strong>Console</strong>.</li>
+      <li>Clique na linha de digitação do Console, pressione Ctrl+V e depois Enter.
+      Um painel aparece no canto da página.</li>
+      <li>No painel, clique em <strong>Escolher arquivo</strong> e selecione o
+      <code>dados-restauracao.json</code>.</li>
+    </ol>
+    <p><strong>Atenção:</strong> o que se cola no Console é o conteúdo do
+    <code>script-para-colar-no-console.txt</code>. O <code>dados-restauracao.json</code> nunca é colado:
+    ele é escolhido pelo botão. Colar o conteúdo do <code>.json</code> no Console dá o erro
+    <code>Unexpected token ':'</code>.</p>
+    <p>Se o navegador bloquear a colagem e pedir, digite <code>allow pasting</code> no Console,
+    pressione Enter e cole de novo.</p>
+  </div>
+
+  <div class="box">
+    <strong>3. Conferir</strong><br>
+    <button id="list">Mostrar o que há no banco</button>
+    <pre id="out">Nada ainda.</pre>
+  </div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const DB_NAME = 'claude-chat-history';
+  const out = document.getElementById('out');
+  const request = (r) => new Promise((resolve, reject) => {
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+
+  function reset() {
+    return new Promise((resolve, reject) => {
+      const r = indexedDB.deleteDatabase(DB_NAME);
+      r.onsuccess = () => resolve();
+      r.onerror = () => reject(r.error);
+      r.onblocked = () => reject(new Error('feche o painel de restauração antes de apagar'));
+    });
+  }
+
+  // Cria o banco com os stores, chaves e índices descritos no arquivo.
+  function createDb(schema) {
+    return new Promise((resolve, reject) => {
+      const r = indexedDB.open(DB_NAME, schema.version || 1);
+      r.onupgradeneeded = () => {
+        const db = r.result;
+        for (const [name, spec] of Object.entries(schema.stores)) {
+          const store = db.createObjectStore(name, {
+            keyPath: spec.key_path, autoIncrement: Boolean(spec.auto_increment),
+          });
+          for (const [indexName, index] of Object.entries(spec.indexes || {})) {
+            store.createIndex(indexName, index.key_path,
+              { unique: Boolean(index.unique), multiEntry: Boolean(index.multi_entry) });
+          }
+        }
+      };
+      r.onsuccess = () => { r.result.close(); resolve(); };
+      r.onerror = () => reject(r.error);
+    });
+  }
+
+  async function seed(records) {
+    const db = await request(indexedDB.open(DB_NAME));
+    const tx = db.transaction(['chats'], 'readwrite');
+    for (const record of records) tx.objectStore('chats').put(record);
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onabort = () => reject(tx.error); });
+    db.close();
+  }
+
+  async function list() {
+    const names = (await indexedDB.databases()).map((d) => d.name);
+    if (!names.includes(DB_NAME)) return { exists: false };
+    const db = await request(indexedDB.open(DB_NAME));
+    const tx = db.transaction(['chats', 'blobs'], 'readonly');
+    const chats = await request(tx.objectStore('chats').getAll());
+    const blobs = await request(tx.objectStore('blobs').getAllKeys());
+    const result = {
+      exists: true, version: db.version,
+      chats: chats.map((c) => ({
+        id: c.id, title: c.title, userId: c.userId, orgId: c.orgId,
+        messages: c.snapshot && c.snapshot.ui && Array.isArray(c.snapshot.ui.messages)
+          ? c.snapshot.ui.messages.length : null,
+      })),
+      blobs,
+    };
+    db.close();
+    return result;
+  }
+
+  async function readPayload() {
+    const file = document.getElementById('schema-file').files[0];
+    if (!file) throw new Error('escolha primeiro o dados-restauracao.json');
+    return JSON.parse(await file.text());
+  }
+
+  const show = (value) => { out.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2); };
+  const guard = (fn) => async () => { try { await fn(); } catch (e) { show('ERRO: ' + (e.message || e)); } };
+
+  document.getElementById('create').addEventListener('click', guard(async () => {
+    const payload = await readPayload();
+    await reset();
+    await createDb(payload.schema);
+    if (document.getElementById('seed').checked && payload.conversations.length) {
+      const first = payload.conversations[0];
+      await seed([{ id: 'conversa-de-ensaio', userId: 'usuario-do-ensaio', orgId: 'org-do-ensaio',
+        fileId: 'arquivo', surface: first.surface || 'sheet', title: 'Conversa que já existia',
+        updatedAt: Date.now(), snapshot: { version: 1, ui: { messages: [] } } }]);
+    }
+    show(await list());
+  }));
+  document.getElementById('reset').addEventListener('click', guard(async () => { await reset(); show('Banco de ensaio apagado.'); }));
+  document.getElementById('list').addEventListener('click', guard(async () => show(await list())));
+
+  window.ensaio = { reset, createDb, seed, list };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+# pyproject.toml: a "ficha técnica" do projeto Python.
+# Diz ao pip como construir o pacote, qual a versão mínima do Python, quais
+# dependências instalar e qual comando de terminal criar.
+
+# Como construir: o pip usa o setuptools para montar o pacote (a "wheel").
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "office-chat-keeper"
+# A versão é lida de src/office_chat_keeper/__init__.py (um lugar só para mudar).
+dynamic = ["version"]
+description = "Backup local e legível do histórico dos suplementos do Claude no Office (ferramenta não oficial, experimental)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE*", "src/office_chat_keeper/_vendor/*/LICENSE"]
+authors = [{ name = "gomesmarcusvinicius" }]
+keywords = ["backup", "office", "indexeddb", "leveldb", "webview2", "windows"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Archiving :: Backup",
+]
+# Nenhuma dependência externa: só a biblioteca padrão do Python. O leitor de
+# IndexedDB/LevelDB (CCL Solutions, licença MIT) vai embutido no pacote; veja
+# src/office_chat_keeper/_vendor/README.md.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/gomesmarcusvinicius/office-chat-keeper"
+Issues = "https://github.com/gomesmarcusvinicius/office-chat-keeper/issues"
+Changelog = "https://github.com/gomesmarcusvinicius/office-chat-keeper/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+# Só para quem vai desenvolver: pip install -e ".[dev]"
+dev = ["pytest>=8"]
+
+# Ponto de entrada de console: depois do "pip install", o comando
+# "office-chat-keeper" passa a chamar a função main() de cli.py.
+[project.scripts]
+office-chat-keeper = "office_chat_keeper.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "office_chat_keeper.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Arquivos que não são Python mas fazem parte do pacote: o script de
+# restauração seletiva, a página de ensaio e os avisos do código embutido.
+[tool.setuptools.package-data]
+office_chat_keeper = ["*.js", "*.html", "_vendor/README.md", "_vendor/*/LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

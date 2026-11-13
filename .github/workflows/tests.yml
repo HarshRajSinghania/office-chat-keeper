@@ -1,0 +1,35 @@
+# GitHub Actions: a cada push e a cada pull request, o GitHub cria uma máquina
+# Windows limpa, instala o projeto e roda os testes. Assim toda mudança é
+# conferida automaticamente, em mais de uma versão do Python.
+name: testes
+
+on:
+  push:
+  pull_request:
+
+# O workflow só precisa ler o código.
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Instalar o projeto e o pytest
+        run: python -m pip install -e ".[dev]"
+
+      - name: Verificar que nada sensível está no repositório
+        run: python tools/verificar_antes_de_publicar.py
+
+      - name: Rodar os testes
+        run: python -m pytest -q
