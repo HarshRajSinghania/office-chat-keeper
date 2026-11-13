@@ -203,7 +203,9 @@ def test_sem_copia_bruta_a_conversa_fica_de_fora(env, capsys):
     data, _root, run, rewrite = env
     rewrite([sample_chat(CHAT_B, title="Outra conversa")])
     assert run("run") == 0
-    for manifest in (data / "snapshots").rglob("manifest.json"):  # some com os snapshots brutos
+    # list(): primeiro lista, depois apaga. Apagar pastas DURANTE a varredura
+    # quebra no Python 3.11.
+    for manifest in list((data / "snapshots").rglob("manifest.json")):  # some com os snapshots brutos
         shutil.rmtree(manifest.parent)
     capsys.readouterr()
     assert run("restore-script", "--conversation", "1111") == 1

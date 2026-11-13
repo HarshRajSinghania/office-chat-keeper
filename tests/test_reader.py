@@ -124,7 +124,7 @@ def test_leitura_nao_altera_os_arquivos(tmp_path):
 def test_blob_ausente_vira_erro_registrado_sem_derrubar(tmp_path):
     db = build_sample_storage(tmp_path)
     db.write()
-    for blob in db.blob_dir.rglob("*"):
+    for blob in list(db.blob_dir.rglob("*")):
         if blob.is_file():
             blob.unlink()
     with SnapshotReader(db.leveldb_dir, db.blob_dir) as reader:

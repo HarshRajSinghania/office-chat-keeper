@@ -289,7 +289,8 @@ def _copy_entries(source: Source, entries: list[FileEntry], tmp: Path,
 def _clean_stale_temp(source_snap_dir: Path) -> None:
     """Remove pastas temporárias NOSSAS que sobraram de uma execução interrompida."""
     now = time.time()
-    for child in source_snap_dir.glob(_TEMP_PREFIX + "*"):
+    # list(): lista antes de apagar (apagar durante a varredura é frágil).
+    for child in list(source_snap_dir.glob(_TEMP_PREFIX + "*")):
         try:
             if child.is_dir() and now - child.stat().st_mtime > _STALE_TEMP_SECONDS:
                 shutil.rmtree(child, ignore_errors=True)
