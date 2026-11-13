@@ -58,6 +58,20 @@ def no_icacls(monkeypatch):
                         lambda path: (True, "teste"))
 
 
+def test_version_e_status_mostram_o_aviso_de_projeto_experimental(tmp_path, capsys):
+    """O aviso de "vibe coding" aparece em uma linha, nos dois lugares."""
+    with pytest.raises(SystemExit) as stop:
+        cli.main(["--version"])
+    assert stop.value.code == 0
+    version_out = capsys.readouterr().out.strip()
+    assert version_out.startswith("office-chat-keeper ") and "\n" not in version_out
+    assert "vibe coding" in version_out and "não oficial" in version_out
+
+    assert cli.main(["--data-dir", str(tmp_path / "dados"),
+                     "--source-root", str(tmp_path / "vazio"), "status"]) == 0
+    assert capsys.readouterr().out.splitlines()[0] == version_out
+
+
 def test_cli_run_e_status(tmp_path, capsys, no_icacls):
     root = tmp_path / "webview2"
     build_sample_storage(root / "aaaa_ADAL" / "2" / "0" / "EBWebView" / "Default" / "IndexedDB").write()

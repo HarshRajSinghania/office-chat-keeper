@@ -1,0 +1,68 @@
+name: Relato de erro
+description: Algo não funcionou como deveria.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar! Este é um projeto experimental, feito por vibe coding e mantido por uma pessoa: não há prazo de resposta.
+
+        **Nunca cole dados reais**: nada de texto de conversas, planilhas ou e-mails, nem snapshots, bancos, exportações, tokens ou caminhos com o seu nome de usuário. Para um problema de segurança, não use este formulário: siga o SECURITY.md.
+  - type: textarea
+    id: o-que-aconteceu
+    attributes:
+      label: O que aconteceu
+      description: Descreva o problema e o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: como-reproduzir
+    attributes:
+      label: Como reproduzir
+      description: Os comandos que você rodou, em ordem. Se possível, com dados sintéticos (o gerador tests/idb_builder.py cria um armazenamento falso).
+      placeholder: |
+        1. office-chat-keeper status
+        2. office-chat-keeper run
+    validations:
+      required: true
+  - type: textarea
+    id: mensagem
+    attributes:
+      label: Mensagem de erro
+      description: Cole a mensagem depois de conferir que ela não tem conteúdo de conversa. Troque o seu nome de usuário por USUARIO.
+      render: text
+  - type: input
+    id: versao
+    attributes:
+      label: Versão da ferramenta
+      description: Saída de `office-chat-keeper --version`.
+      placeholder: office-chat-keeper 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Windows, Python e forma de instalação
+      placeholder: Windows 11, Python 3.12 (Microsoft Store), pip install --user
+    validations:
+      required: true
+  - type: dropdown
+    id: app
+    attributes:
+      label: App do Office envolvido
+      multiple: true
+      options:
+        - Excel
+        - Word
+        - PowerPoint
+        - Outlook
+        - Não sei / não se aplica
+    validations:
+      required: true
+  - type: checkboxes
+    id: sem-dados-reais
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Conferi que este relato não contém dados reais de conversas, tokens nem arquivos da pasta de dados.
+          required: true

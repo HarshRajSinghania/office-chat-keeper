@@ -1,0 +1,9 @@
+# Página "New issue": além dos modelos, mostra estes atalhos.
+blank_issues_enabled: true
+contact_links:
+  - name: Relatar uma vulnerabilidade (privado)
+    url: https://github.com/gomesmarcusvinicius/office-chat-keeper/security/advisories/new
+    about: Problemas de segurança não devem ir para uma issue pública. Use o relato privado.
+  - name: Dúvidas e ideias soltas
+    url: https://github.com/gomesmarcusvinicius/office-chat-keeper/discussions
+    about: Para perguntar como usar, contar que funcionou no seu ambiente ou conversar sobre uma ideia.

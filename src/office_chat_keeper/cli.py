@@ -36,7 +36,7 @@ from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from . import __version__
+from . import banner
 from .config import (Config, ConfigError, check_destination_is_safe, load_config,
                      onedrive_root_for)
 from .discovery import discover_sources
@@ -96,7 +96,7 @@ def _onedrive_warning(cfg: Config) -> str | None:
 
 
 def cmd_status(cfg: Config) -> int:
-    print(f"office-chat-keeper {__version__} - ferramenta não oficial, experimental")
+    print(banner())
     print()
     print(f"Origem (somente leitura): {cfg.source_root}")
     print(f"Pasta de dados:           {cfg.data_dir}"
@@ -742,13 +742,28 @@ def cmd_alerts(cfg: Config, ack: list[str] | None, show_all: bool) -> int:
     return 0
 
 
+class _VersionAction(argparse.Action):
+    """`--version`: mostra a versão e o aviso em UMA linha e encerra.
+
+    A ação "version" pronta do argparse quebra o texto na largura do terminal;
+    aqui a linha sai inteira.
+    """
+
+    def __init__(self, option_strings, dest, **kwargs):
+        super().__init__(option_strings, dest, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(banner())
+        parser.exit()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="office-chat-keeper",
         description="Backup local do histórico dos suplementos do Claude no Office "
                     "(ferramenta não oficial, experimental).")
-    parser.add_argument("--version", action="version",
-                        version=f"office-chat-keeper {__version__}")
+    parser.add_argument("--version", action=_VersionAction,
+                        help="mostra a versão e encerra")
     parser.add_argument("--data-dir", help="pasta de dados (padrão: %%USERPROFILE%%\\ClaudeOfficeBackup)")
     parser.add_argument("--source-root", help="pasta de origem a varrer (padrão: Wef\\webview2 do Office)")
     sub = parser.add_subparsers(dest="command", required=True, metavar="comando")

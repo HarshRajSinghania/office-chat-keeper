@@ -1,0 +1,45 @@
+name: Sugestão de melhoria
+description: Uma ideia de função nova ou de mudança em algo que já existe.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de sugerir, vale olhar o ROADMAP.md: ele diz o que está planejado e o que está fora do escopo (por exemplo, macOS, nuvem e qualquer envio de dados).
+
+        **Nunca cole dados reais** de conversas, planilhas ou e-mails.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Que problema isso resolve
+      description: O que você tentou fazer e não conseguiu, ou o que ficou trabalhoso.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que você propõe
+      description: Como você imagina a solução. Um exemplo de comando ou de saída ajuda.
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que você considerou
+  - type: dropdown
+    id: ajuda
+    attributes:
+      label: Você pode ajudar a implementar?
+      options:
+        - Sim, posso enviar um pull request
+        - Posso testar
+        - Não, é só a sugestão
+    validations:
+      required: true
+  - type: checkboxes
+    id: sem-dados-reais
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Conferi que esta sugestão não contém dados reais de conversas, tokens nem arquivos da pasta de dados.
+          required: true

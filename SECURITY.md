@@ -29,6 +29,9 @@ Se precisar mostrar um caso, reproduza-o com dados sintéticos (o gerador em
 
 ## O que mais interessa revisar
 
+Para combinar em público a revisão de uma destas partes (sem relatar nada
+explorável), use o modelo de issue "Pedido ou oferta de revisão de segurança".
+
 - **Snapshots brutos.** Contêm tokens de conectores. A ferramenta os guarda em
   uma pasta com permissão restrita ao usuário (`icacls`) e nunca os decodifica.
   Qualquer caminho pelo qual esse conteúdo possa vazar para exportações, logs

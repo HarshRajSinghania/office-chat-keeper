@@ -1,0 +1,49 @@
+name: Pedido ou oferta de revisão de segurança
+description: Pedir, ou oferecer, a revisão de uma parte sensível do código. NÃO use para relatar uma vulnerabilidade.
+labels: ["security", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Encontrou uma vulnerabilidade? Não abra issue pública.** Use o relato privado: aba **Security** do repositório, botão **Report a vulnerability** (detalhes no SECURITY.md).
+
+        Este formulário serve para combinar, em público, a revisão de uma parte do código que ainda não foi revisada por um profissional, ou para registrar o resultado de uma revisão que não encontrou nada explorável.
+
+        **Nunca cole dados reais** de conversas, tokens ou arquivos da pasta de dados.
+  - type: dropdown
+    id: parte
+    attributes:
+      label: Parte do código
+      multiple: true
+      options:
+        - Snapshots brutos e permissão da pasta de dados (snapshot.py, protect.py)
+        - Filtro de credenciais das exportações (export.py)
+        - Restauração do banco inteiro (restore.py)
+        - Script de restauração seletiva (restore_script.js)
+        - Leitura do IndexedDB/LevelDB (reader.py, _vendor)
+        - Logs e relatórios
+        - Tarefa agendada (scheduler.py)
+        - Outra
+    validations:
+      required: true
+  - type: textarea
+    id: escopo
+    attributes:
+      label: O que revisar, ou o que foi revisado
+      description: A pergunta que a revisão deve responder, ou o que você olhou e como.
+    validations:
+      required: true
+  - type: textarea
+    id: achados
+    attributes:
+      label: Observações que podem ser públicas
+      description: Pontos de melhoria que não permitem explorar ninguém. Se algo for explorável, pare e use o relato privado.
+  - type: checkboxes
+    id: confirmacoes
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Isto não é o relato de uma vulnerabilidade explorável (esse vai pelo relato privado).
+          required: true
+        - label: Conferi que este texto não contém dados reais de conversas, tokens nem arquivos da pasta de dados.
+          required: true

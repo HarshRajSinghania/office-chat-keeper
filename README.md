@@ -44,6 +44,8 @@ readable backup of that history so it is not lost again.
 - 100% local: no network access, no telemetry.
 - It does **not** recover history lost before it was installed.
 - Windows 10/11, Python 3.11+. Documentation and messages are in Portuguese.
+- Contributions and code reviews are welcome, in English or Portuguese: see
+  [CONTRIBUTING.md](CONTRIBUTING.md). Never post real conversation data.
 
 Install (no Git required):
 
@@ -143,6 +145,11 @@ Observações:
   `--user`, a pasta de scripts do Python não está no PATH. Use
   `py -m office_chat_keeper` no lugar de `office-chat-keeper` (funciona sempre),
   ou instale com o pipx, que ajusta o PATH.
+- **Se a instalação falhar com `No such file or directory` e uma dica sobre
+  "Long Path"**, o caminho de instalação passou do limite de 260 caracteres do
+  Windows. Pode acontecer com `--user` no Python da Microsoft Store quando o
+  nome de usuário do Windows é longo (cerca de 25 caracteres ou mais). Use a
+  forma 2 (pipx), que instala em uma pasta curta.
 - **Se o `pip` estiver bloqueado** pela política da sua empresa, a instalação
   falha com erro de acesso ou de proxy. Nesse caso, peça a liberação à TI.
 
@@ -255,6 +262,19 @@ office-chat-keeper search --kind user --kind assistant concilia*
 O código foi gerado com o Claude Code e revisado **apenas pelo autor**, que é
 analista de dados. Ninguém deve presumir que ele foi auditado. Os testes
 automatizados usam somente dados sintéticos, criados por código.
+
+## Como contribuir
+
+O projeto é aberto e precisa de ajuda, principalmente de quem pode testar em
+outro ambiente ou revisar as partes sensíveis do código.
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): como relatar um erro, sugerir uma
+  melhoria ou enviar código. Regra sem exceção: **nenhum dado real** em issues,
+  pull requests ou testes.
+- [ROADMAP.md](ROADMAP.md): o que está planejado e o que está fora do escopo.
+- [Issues abertas](https://github.com/gomesmarcusvinicius/office-chat-keeper/issues):
+  as marcadas com `good first issue` são boas para começar.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): o combinado de convivência.
 
 ## Documentação
 

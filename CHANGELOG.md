@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## Ainda não lançado
+
+- `--version` e o cabeçalho do `status` mostram, em uma linha, o aviso de
+  projeto experimental feito por vibe coding.
+- README: observação sobre o limite de 260 caracteres do Windows na instalação
+  com `--user`.
+- Preparação para contribuições: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
+  `ROADMAP.md`, modelos de issue e de pull request.
+
 ## 0.1.0
 
 Primeira versão pública. Experimental.
